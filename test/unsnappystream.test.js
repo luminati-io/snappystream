@@ -13,27 +13,24 @@ describe('UnsnappyStream', () => {
   let stream = null
   let frame = null
 
-  beforeEach((done) =>
-    snappy.compress(data, function (err, snappyData) {
-      if (err) {
-        return done(err)
-      }
+  beforeEach((done) =>{
+      snappy.compress(data).catch(err=>done(err)).then(snappyData=> {
+          compressedData = snappyData
+          stream = new UnsnappyStream()
 
-      compressedData = snappyData
-      stream = new UnsnappyStream()
+          frame = Buffer.alloc(8)
+          // Frame ID
+          frame.writeUInt8(0x00, 0)
+          // Frame payload length
+          int24.writeUInt24LE(frame, 1, 4 + compressedData.length)
+          // Checksum (invalid)
+          frame.writeUInt32LE(0x00, 4)
+          // Frame with payload
+          frame = Buffer.concat([frame, compressedData])
 
-      frame = Buffer.alloc(8)
-      // Frame ID
-      frame.writeUInt8(0x00, 0)
-      // Frame payload length
-      int24.writeUInt24LE(frame, 1, 4 + compressedData.length)
-      // Checksum (invalid)
-      frame.writeUInt32LE(0x00, 4)
-      // Frame with payload
-      frame = Buffer.concat([frame, compressedData])
-
-      return done()
-    })
+          return done()
+      })
+  }
   )
 
   describe('framePayload', () => {

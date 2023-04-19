@@ -1,6 +1,6 @@
 {
-  "name": "snappystream",
-  "version": "2.0.0",
+  "name": "@luminati-io/snappystream",
+  "version": "2.0.0-lum.1",
   "description": "Framed Snappy streams",
   "main": "lib/snappystreams.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dudleycarr/snappystream.git"
+    "url": "git+https://github.com/dudleycarr/snappystream.git"
   },
   "keywords": [
     "Snappy",
@@ -23,17 +23,20 @@
   },
   "homepage": "https://github.com/dudleycarr/snappystream",
   "dependencies": {
-    "@napi-rs/snappy": "^1.0.1",
     "@node-rs/crc32": "^1.1.2",
-    "int24": "0.0.1"
+    "int24": "0.0.1",
+    "snappy": "^7.2.2"
   },
   "devDependencies": {
     "eslint": "^8.9.0",
     "jest": "^27.0.6",
-    "prettier": "^2.3.2",
-    "snappy": "^6.3.5"
+    "prettier": "^2.3.2"
   },
   "engines": {
     "node": ">=12"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
   }
 }

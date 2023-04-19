@@ -52,11 +52,8 @@ describe('SnappyStream', () => {
     let compressedFrames = null
     let compressedData = null
 
-    beforeEach((done) =>
-      snappy.compress(txt, (err, snappyData) => {
-        if (err) {
-          return done(err)
-        }
+    beforeEach((done) =>{
+        snappy.compress(txt).catch(err=>done(err)).then((snappyData) => {
         compressedData = snappyData
 
         return compress(txt, (err, out) => {
@@ -64,7 +61,7 @@ describe('SnappyStream', () => {
           return done(err)
         })
       })
-    )
+    })
 
     it('should start with the compressed data chunk ID', () => {
       expect(compressedFrames.readUInt8(0)).toBe(0x00)
@@ -83,12 +80,10 @@ describe('SnappyStream', () => {
 
     it('should have match decompressed data', (done) => {
       const payload = compressedFrames.slice(8)
-      return snappy.uncompress(
-        payload,
-        {asBuffer: false},
-        (err, uncompressedPayload) => {
+      snappy.uncompress(payload, {asBuffer: false})
+        .catch(err=>done(err)).then((uncompressedPayload) => {
           expect(uncompressedPayload).toBe(txt)
-          return done(err)
+          return done()
         }
       )
     })
@@ -114,39 +109,30 @@ describe('SnappyStream', () => {
       const frameSize = int24.readUInt24LE(compressedFrames, 1)
       const compressedData = compressedFrames.slice(8, frameSize + 4)
 
-      return snappy.uncompress(compressedData, (err, frameData) => {
-        if (err) {
-          return done(err)
-        }
-
-        expect(frameData.length).toBe(65536)
-        expect(frameData.toString()).toBe(data.slice(0, 65536))
-        return done()
-      })
+        snappy.uncompress(compressedData).catch(err=>done(err))
+        .then((frameData) => {
+            expect(frameData.length).toBe(65536)
+            expect(frameData.toString()).toBe(data.slice(0, 65536))
+            return done()
+        })
     })
 
     it('should have the 2nd chunk start with a compressed data chunk ID', () => {
       expect(compressedFrames.readUInt8(3085)).toBe(0x00)
     })
 
-    it('should have the 2nd chunk with an uncompressed size of 34,464', (done) => {
-      const secondFrame = compressedFrames.slice(3085)
-      const frameSize = int24.readUInt24LE(secondFrame, 1)
+      it('should have the 2nd chunk with an uncompressed size of 34,464', (done) => {
+          const secondFrame = compressedFrames.slice(3085)
+          const frameSize = int24.readUInt24LE(secondFrame, 1)
 
-      expect(frameSize).toBe(secondFrame.length - 4)
+          expect(frameSize).toBe(secondFrame.length - 4)
 
-      return snappy.uncompress(
-        secondFrame.slice(8),
-        {asBuffer: false},
-        function (err, frameData) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(frameData).toEqual(data.slice(65536))
-          return done()
-        }
-      )
-    })
+          snappy.uncompress(secondFrame.slice(8), {asBuffer: false})
+              .catch(err=>done(err))
+              .then(frameData=>{
+                  expect(frameData).toEqual(data.slice(65536))
+                  return done()
+              })
+      })
   })
 })
